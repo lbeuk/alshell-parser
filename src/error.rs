@@ -6,6 +6,7 @@ pub type ParseResult<T> = Result<T, ParseError>;
 #[derive(Debug)]
 pub enum ParseError {
     UnexpectedCharacter(char, usize),
+    UnterminatedCommand(usize),
 }
 
 impl fmt::Display for ParseError {
@@ -13,6 +14,9 @@ impl fmt::Display for ParseError {
         match self {
             ParseError::UnexpectedCharacter(c, pos) => {
                 write!(f, "Unexptected token: {} at {}.", c, pos)
+            },
+            ParseError::UnterminatedCommand(pos) => {
+                write!(f, "Unterminated command at {}. THIS ERROR SHOULD NEVER HAPPEN, PLEASE REPORT THIS ERROR", pos)
             }
         }
     }

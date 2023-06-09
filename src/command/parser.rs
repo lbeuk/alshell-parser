@@ -2,7 +2,7 @@
 use std::cell::{RefMut, RefCell};
 
 use crate::error::ParseResult;
-use crate::{C_QUOTE, C_LIT_QUOTE, C_EXE_BLOCK, C_SPACE, C_NEWLINE, C_SUPER, C_END_CMD, C_ESCAPE};
+use crate::{C_QUOTE, C_LIT_QUOTE, C_EXE_BLOCK, C_SPACE, C_NEWLINE, C_SUPER, C_END_CMD, C_ESCAPE, C_PIPE};
 use crate::ParseTools;
 
 use super::{QuoteComponenet, TokenComponent, Token, Command};
@@ -56,7 +56,7 @@ impl<'a> CommandParser<'a> {
                 }
                 C_LIT_QUOTE => components.push(self.parse_lit_quoted()),
                 C_QUOTE => components.push(self.parse_quoted()),
-                C_END_CMD => break,
+                C_END_CMD | C_PIPE => break,
                 _ => components.push(self.parse_string()),
             };
 
@@ -66,6 +66,8 @@ impl<'a> CommandParser<'a> {
         if components.len() > 0 {
             self.command.tokens.push(Token { components });
         }
+
+        self.decrement();
 
         return Ok(self.command);
     }
@@ -77,12 +79,13 @@ impl<'a> CommandParser<'a> {
 
         while !self.eof() {
             let c = self.cur_char();
+            println!("{} {}", escaped, self.idx_val());
 
             match (escaped, c) {
                 (false, C_ESCAPE) => set_escaped = true,
                 (
                     false,
-                    C_QUOTE | C_LIT_QUOTE | C_EXE_BLOCK | C_SPACE | C_NEWLINE | C_SUPER | C_END_CMD,
+                    C_QUOTE | C_LIT_QUOTE | C_EXE_BLOCK | C_SPACE | C_NEWLINE | C_SUPER | C_END_CMD | C_PIPE,
                 ) => break,
                 (_, _) => rendered.push(c),
             };

@@ -1,16 +1,18 @@
+pub(crate) mod parser;
 mod tests;
-pub (crate) mod parser;
 
 use std::ops::{Deref, DerefMut};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Command {
     pub tokens: TokenSequence,
 }
 
 impl Default for Command {
     fn default() -> Self {
-        return Command { tokens: Default::default()};
+        return Command {
+            tokens: Default::default(),
+        };
     }
 }
 
@@ -18,7 +20,7 @@ pub trait TokenRender {
     fn render(&self) -> String;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TokenSequence {
     pub tokens: Vec<Token>,
 }
@@ -52,7 +54,7 @@ impl TokenRender for TokenSequence {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub components: Vec<TokenComponent>,
 }
@@ -66,7 +68,7 @@ impl TokenRender for Token {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum TokenComponent {
     String(String),
     Literal(String),
@@ -83,14 +85,16 @@ impl TokenRender for TokenComponent {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct QuoteComponenet {
     tokens: TokenSequence,
 }
 
 impl Default for QuoteComponenet {
     fn default() -> Self {
-        return QuoteComponenet { tokens: Default::default() };
+        return QuoteComponenet {
+            tokens: Default::default(),
+        };
     }
 }
 

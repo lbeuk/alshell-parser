@@ -1,8 +1,9 @@
-use std::cell::{RefMut, RefCell};
 use super::Pipeline;
-use crate::error::{ParseResult, ParseError::UnexpectedCharacter};
-use crate::{C_PIPE, C_END_CMD};
+use crate::command::Command;
+use crate::error::{ParseError::UnterminatedCommand, ParseResult};
 use crate::{command::parser::CommandParser, ParseTools, C_SPACE};
+use crate::{C_END_CMD, C_PIPE};
+use std::cell::{RefCell, RefMut};
 
 pub(crate) struct PipelineParser<'a> {
     pub(crate) chars: &'a [char],
@@ -28,42 +29,48 @@ impl<'a> ParseTools for PipelineParser<'a> {
     }
 }
 
-impl <'a, T: ParseTools> From<&'a T> for PipelineParser<'a> {
+impl<'a, T: ParseTools> From<&'a T> for PipelineParser<'a> {
     fn from(value: &'a T) -> Self {
         return PipelineParser {
             chars: value.chars(),
             idx: value.index_refcell(),
             pipeline: Default::default(),
-        }
+        };
     }
 }
 
-impl<'a> PipelineParser<'a> {
+enum PipelineStatus {
+    StartCmd,
+    FinishedCmd(Command),
+}
 
+impl<'a> PipelineParser<'a> {
     pub fn parse(mut self) -> ParseResult<Pipeline> {
+        let mut pipe_status = PipelineStatus::StartCmd;
+
         while !self.eof() {
             let c = self.cur_char();
+            println!("{} {}", c, self.idx_val());
 
-            match c {
-                C_SPACE => {},
-                C_PIPE => panic!(),
-                _ => {
-                    let new_cmd = CommandParser::from(&self).parse()?;
-                    self.pipeline.push(new_cmd);
-
-                    let c = self.cur_char();
-                    let i = self.idx_val();
-                    match c {
-                        C_PIPE => {},
-                        C_END_CMD => break,
-                        _ => return Err(UnexpectedCharacter(c, i))
-                    }
-                }
+            match (&pipe_status, c) {
+                (PipelineStatus::FinishedCmd(c), C_PIPE) => {
+                    self.pipeline.push(c.clone());
+                    pipe_status = PipelineStatus::StartCmd;
+                },
+                (PipelineStatus::FinishedCmd(_), C_END_CMD) => break,
+                (PipelineStatus::FinishedCmd(_), _) => return Err(UnterminatedCommand(self.idx_val())),
+                (PipelineStatus::StartCmd, C_SPACE) => {},
+                (PipelineStatus::StartCmd, _) => pipe_status = PipelineStatus::FinishedCmd(CommandParser::from(&self).parse()?),
             }
 
             self.increment();
         }
+
+        match pipe_status {
+            PipelineStatus::StartCmd => {},
+            PipelineStatus::FinishedCmd(c) => self.pipeline.push(c),
+        }
+
         return Ok(self.pipeline);
     }
-
 }

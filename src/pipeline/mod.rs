@@ -5,6 +5,7 @@ use crate::command::Command;
 mod tests;
 pub (crate) mod parser;
 
+#[derive(Clone, Debug)]
 pub struct Pipeline {
     commands: Vec<Command>
 }
