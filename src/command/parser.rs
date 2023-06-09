@@ -1,13 +1,12 @@
-
-use std::cell::{RefMut, RefCell};
+use std::cell::{RefCell, RefMut};
 
 use crate::error::ParseResult;
-use crate::{C_QUOTE, C_LIT_QUOTE, C_EXE_BLOCK, C_SPACE, C_NEWLINE, C_SUPER, C_END_CMD, C_ESCAPE, C_PIPE};
 use crate::ParseTools;
+use crate::chars::*;
 
-use super::{QuoteComponenet, TokenComponent, Token, Command};
+use super::{Command, QuoteComponenet, Token, TokenComponent};
 
-pub (crate) struct CommandParser<'a> {
+pub(crate) struct CommandParser<'a> {
     chars: &'a [char],
     idx: &'a RefCell<usize>,
     command: Command,
@@ -31,24 +30,23 @@ impl<'a> ParseTools for CommandParser<'a> {
     }
 }
 
-impl <'a, T: ParseTools> From<&'a T> for CommandParser<'a> {
+impl<'a, T: ParseTools> From<&'a T> for CommandParser<'a> {
     fn from(value: &'a T) -> Self {
         return CommandParser {
             chars: value.chars(),
             idx: value.index_refcell(),
             command: Default::default(),
-        }
+        };
     }
 }
 
 impl<'a> CommandParser<'a> {
-
-    pub fn parse(mut self) -> ParseResult<Command>{
+    pub fn parse(mut self) -> ParseResult<Command> {
         let mut components = Vec::new();
 
         while !self.eof() {
             let c = self.cur_char();
-            
+
             match c {
                 C_SPACE => {
                     self.command.tokens.push(Token { components });
@@ -56,7 +54,7 @@ impl<'a> CommandParser<'a> {
                 }
                 C_LIT_QUOTE => components.push(self.parse_lit_quoted()),
                 C_QUOTE => components.push(self.parse_quoted()),
-                C_END_CMD | C_PIPE => break,
+                C_END_CMD | C_PIPE | C_NEWLINE => break,
                 _ => components.push(self.parse_string()),
             };
 
@@ -85,7 +83,8 @@ impl<'a> CommandParser<'a> {
                 (false, C_ESCAPE) => set_escaped = true,
                 (
                     false,
-                    C_QUOTE | C_LIT_QUOTE | C_EXE_BLOCK | C_SPACE | C_NEWLINE | C_SUPER | C_END_CMD | C_PIPE,
+                    C_QUOTE | C_LIT_QUOTE | C_EXE_BLOCK | C_SPACE | C_NEWLINE | C_SUPER | C_END_CMD
+                    | C_PIPE,
                 ) => break,
                 (_, _) => rendered.push(c),
             };
@@ -130,7 +129,7 @@ impl<'a> CommandParser<'a> {
 
         while !self.eof() {
             let c = self.cur_char();
-            
+
             match c {
                 C_SPACE => {
                     quote.push(Token { components });

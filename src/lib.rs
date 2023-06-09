@@ -9,15 +9,17 @@ pub mod error;
 pub mod pipeline;
 mod script;
 
-pub const C_ESCAPE: char = '\\';
-pub const C_QUOTE: char = '"';
-pub const C_LIT_QUOTE: char = '\'';
-pub const C_EXE_BLOCK: char = '`';
-pub const C_SPACE: char = ' ';
-pub const C_NEWLINE: char = '\n';
-pub const C_SUPER: char = '$';
-pub const C_END_CMD: char = ';';
-pub const C_PIPE: char = '|';
+pub mod chars {
+    pub const C_ESCAPE: char = '\\';
+    pub const C_QUOTE: char = '"';
+    pub const C_LIT_QUOTE: char = '\'';
+    pub const C_EXE_BLOCK: char = '`';
+    pub const C_SPACE: char = ' ';
+    pub const C_NEWLINE: char = '\n';
+    pub const C_SUPER: char = '$';
+    pub const C_END_CMD: char = ';';
+    pub const C_PIPE: char = '|';
+}
 
 trait ParseTools {
     fn chars(&self) -> &[char];
@@ -71,11 +73,7 @@ impl Parser {
         self.chars.extend(text.chars());
     }
 
-    pub fn reset(&mut self) {
-        *self.index.borrow_mut() = 0;
-    }
-
-    pub fn parse(mut self) -> ParseResult<Script>{
+    pub fn parse(mut self) -> ParseResult<Script> {
         while !self.eof() {
             let c = self.cur_char();
 

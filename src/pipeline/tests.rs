@@ -4,7 +4,7 @@
 // fn test_input() {
 //     use crate::{Parser, pipeline::parser::PipelineParser};
 
-//     let line = "hello there;what";
+//     let line = "hello there|\nmike";
 //     let rp = Parser::with_text(line);
 
 //     let p = PipelineParser::from(&rp);
