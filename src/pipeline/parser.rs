@@ -52,7 +52,6 @@ impl<'a> PipelineParser<'a> {
 
         while !self.eof() {
             let c = self.cur_char();
-            println!("{} {}", c, self.idx_val());
 
             match (&pipe_status, c) {
                 (PipelineStatus::FinishedCmd(c), C_PIPE) => {

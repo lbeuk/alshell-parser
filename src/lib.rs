@@ -83,6 +83,8 @@ impl Parser {
                     self.script.push(new_pipeline);
                 }
             }
+
+            self.increment();
         }
 
         return Ok(self.script);

@@ -2,6 +2,7 @@ use std::ops::{Deref, DerefMut};
 
 use crate::pipeline::Pipeline;
 
+#[derive(Debug)]
 pub struct Script {
     commands: Vec<Pipeline>
 }

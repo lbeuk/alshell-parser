@@ -77,7 +77,6 @@ impl<'a> CommandParser<'a> {
 
         while !self.eof() {
             let c = self.cur_char();
-            println!("{} {}", escaped, self.idx_val());
 
             match (escaped, c) {
                 (false, C_ESCAPE) => set_escaped = true,
